@@ -44,6 +44,10 @@ def encode_image(
         icc_profile = original.info.get("icc_profile")
         img = ImageOps.exif_transpose(original)
         img = downscale(img, settings.max_image_dimension)
+        if settings.grayscale:
+            img = to_grayscale(img)
+            # A colour ICC profile is invalid on a grayscale image.
+            icc_profile = None
         _SAVERS[out_format](img, buf, settings, icc_profile)
         return buf.getvalue(), out_format
 
@@ -53,6 +57,13 @@ def downscale(img: Image.Image, max_dimension: int | None) -> Image.Image:
         img = img.copy()
         img.thumbnail((max_dimension, max_dimension), Image.Resampling.LANCZOS)
     return img
+
+
+def to_grayscale(img: Image.Image) -> Image.Image:
+    if img.mode in ("1", "L", "LA"):
+        return img
+    has_alpha = "A" in img.mode or "transparency" in img.info
+    return img.convert("LA" if has_alpha else "L")
 
 
 def _icc_kwargs(icc_profile: bytes | None) -> dict:

@@ -6,7 +6,7 @@ from pathlib import Path
 import pikepdf
 from pikepdf import Array, Name, PdfImage
 
-from .images import downscale
+from .images import downscale, to_grayscale
 from .settings import CompressionSettings
 
 PDF_EXTENSIONS = {".pdf"}
@@ -106,6 +106,8 @@ def _recompress_image(image: pikepdf.Stream, settings: CompressionSettings) -> N
         pil = pil.convert("L")
     if pil.mode not in ("RGB", "L"):
         return
+    if settings.grayscale:
+        pil = to_grayscale(pil)
     # Resizing would break the pixel correspondence with an attached soft mask.
     if "/SMask" not in image:
         pil = downscale(pil, settings.max_image_dimension)

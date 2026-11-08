@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import dataclasses
 import io
 import random
 import zipfile
@@ -80,6 +81,45 @@ def test_pdf_images_are_recompressed(tmp_path: Path):
     assert result.saved_percent > 30
     with pikepdf.open(result.output) as pdf:
         assert len(pdf.pages) == 2
+
+
+def _colour_pdf(path: Path) -> None:
+    colour = Image.merge("RGB", [_photo_like((2480, 3508)).getchannel(0)] * 2 + [Image.new("L", (2480, 3508), 200)])
+    colour.save(path, "PDF", quality=95)
+
+
+def test_extreme_is_smaller_than_maximum(tmp_path: Path):
+    src = tmp_path / "doc.pdf"
+    _colour_pdf(src)
+
+    maximum = compress_file(src, tmp_path / "max", PRESETS["Maximum compression"])
+    extreme = compress_file(src, tmp_path / "extreme", PRESETS["Extreme (smallest, low quality)"])
+
+    assert extreme.compressed_size < maximum.compressed_size
+
+
+def test_grayscale_pdf_is_smaller_and_gray(tmp_path: Path):
+    src = tmp_path / "doc.pdf"
+    _colour_pdf(src)
+    settings = PRESETS["Maximum compression"]
+
+    colour = compress_file(src, tmp_path / "colour", settings)
+    gray = compress_file(src, tmp_path / "gray", dataclasses.replace(settings, grayscale=True))
+
+    assert gray.compressed_size < colour.compressed_size
+    with pikepdf.open(gray.output) as pdf:
+        image = next(iter(pdf.pages[0].Resources.XObject.values()))
+        assert image.ColorSpace == Name.DeviceGray
+
+
+def test_grayscale_image(tmp_path: Path):
+    src = tmp_path / "photo.jpg"
+    _photo_like().save(src, "JPEG", quality=98)
+
+    result = compress_file(src, settings=dataclasses.replace(BALANCED, grayscale=True))
+
+    with Image.open(result.output) as img:
+        assert img.mode == "L"
 
 
 def test_pdf_flate_image_with_soft_mask(tmp_path: Path):

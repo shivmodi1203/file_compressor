@@ -7,6 +7,7 @@ from PySide6.QtCore import Qt, QThread, QUrl
 from PySide6.QtGui import QColor, QDesktopServices, QDragEnterEvent, QDropEvent, QPalette
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QCheckBox,
     QComboBox,
     QFileDialog,
     QFormLayout,
@@ -131,11 +132,19 @@ class MainWindow(QMainWindow):
         self.preset_combo.addItems(PRESETS.keys())
         self.preset_combo.setCurrentText(DEFAULT_PRESET)
         self.preset_combo.setToolTip(
-            "Maximum compression: smallest files, visible quality loss possible.\n"
+            "Extreme: smallest possible files, photos look noticeably rough.\n"
+            "Maximum compression: very small files, some visible quality loss.\n"
             "Balanced: good size reduction with little visible difference.\n"
             "High quality: gentle compression, full image resolution kept."
         )
         form.addRow("Quality:", self.preset_combo)
+
+        self.grayscale_check = QCheckBox("Convert images to black && white (grayscale)")
+        self.grayscale_check.setToolTip(
+            "Removes colour from photos and pictures, including those inside PDFs and documents.\n"
+            "Works well for scanned documents. Text is not affected."
+        )
+        form.addRow("", self.grayscale_check)
 
         self.archive_combo = QComboBox()
         self.archive_combo.addItem("ZIP (opens everywhere)", ArchiveFormat.ZIP.value)
@@ -245,6 +254,7 @@ class MainWindow(QMainWindow):
         settings = dataclasses.replace(
             PRESETS[self.preset_combo.currentText()],
             archive_format=ArchiveFormat(self.archive_combo.currentData()),
+            grayscale=self.grayscale_check.isChecked(),
         )
 
         self._outputs.clear()
@@ -328,6 +338,7 @@ class MainWindow(QMainWindow):
             self.clear_btn,
             self.preset_combo,
             self.archive_combo,
+            self.grayscale_check,
             self.same_folder_radio,
             self.custom_folder_radio,
         ):

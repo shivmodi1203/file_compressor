@@ -14,10 +14,14 @@ class CompressionSettings:
     jpeg_quality: int = 72
     max_image_dimension: int | None = 2560
     png_max_colors: int | None = None
+    grayscale: bool = False
     archive_format: ArchiveFormat = ArchiveFormat.ZIP
 
 
 PRESETS: dict[str, CompressionSettings] = {
+    "Extreme (smallest, low quality)": CompressionSettings(
+        jpeg_quality=35, max_image_dimension=1200, png_max_colors=64
+    ),
     "Maximum compression": CompressionSettings(
         jpeg_quality=55, max_image_dimension=1600, png_max_colors=256
     ),
