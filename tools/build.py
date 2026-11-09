@@ -250,8 +250,13 @@ Terminal=false
 
     env = {**os.environ, "ARCH": "x86_64", "APPIMAGE_EXTRACT_AND_RUN": "1"}
     output = RELEASE / f"{EXE_NAME}-{__version__}-x86_64.AppImage"
-    print("+", appimagetool, appdir, output, flush=True)
-    subprocess.run([appimagetool, str(appdir), str(output)], check=True, env=env)
+    cmd = [appimagetool]
+    # Without a local runtime file, appimagetool downloads one from GitHub on every build.
+    if os.environ.get("APPIMAGE_RUNTIME"):
+        cmd += ["--runtime-file", os.environ["APPIMAGE_RUNTIME"]]
+    cmd += [str(appdir), str(output)]
+    print("+", " ".join(cmd), flush=True)
+    subprocess.run(cmd, check=True, env=env)
 
 
 def main() -> None:
