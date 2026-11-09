@@ -1,6 +1,6 @@
 [project]
 name = "file-compressor"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Desktop app to reduce the size of images, PDFs, Office documents and other files"
 requires-python = ">=3.10"
 dependencies = [
@@ -19,6 +19,9 @@ file-compressor = "file_compressor.app:main"
 
 [tool.setuptools.packages.find]
 include = ["file_compressor*"]
+
+[tool.setuptools.dynamic]
+version = { attr = "file_compressor.__version__" }
 
 [tool.setuptools.package-data]
 file_compressor = ["resources/*"]
