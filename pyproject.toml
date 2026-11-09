@@ -20,6 +20,9 @@ file-compressor = "file_compressor.app:main"
 [tool.setuptools.packages.find]
 include = ["file_compressor*"]
 
+[tool.setuptools.package-data]
+file_compressor = ["resources/*"]
+
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]

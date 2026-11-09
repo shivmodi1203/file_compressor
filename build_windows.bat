@@ -12,6 +12,8 @@ pip install -r requirements.txt pyinstaller || exit /b 1
 
 pyinstaller --noconfirm --clean --onefile --windowed ^
     --name FileCompressor ^
+    --icon file_compressor\resources\icon.ico ^
+    --add-data "file_compressor\resources;file_compressor\resources" ^
     file_compressor\__main__.py || exit /b 1
 
 echo.
